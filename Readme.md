@@ -4,7 +4,7 @@
 
   Einbau des neuen CookieConsent oberhalb von `<div id="serviceBar">`.
 
-    ```
+    ```php
       <div data-sticky-container>
         <div class="sticky top-bar" data-sticky data-margin-top="0" data-sticky-on="small">
           <!-- Pfad zur Datei im Template: wibu-theme/templates/partials/gdpr/cookieconsent.php -->
