@@ -15,7 +15,7 @@
 
   ### CSS für den neuen Cookie Disclaimer
 
-  Als SASS für Foundation 6
+  ####Als SASS für Foundation 6
 
 ```css
   #cookieConsent {
@@ -130,7 +130,7 @@
 
 ```
 
-  Als Compiliertes CSS
+  ####Als Compiliertes CSS
 
 ```css
 #cookieConsent {
@@ -252,4 +252,108 @@
   top: 50%;
   margin-top: -35px;
   margin-left: -47px; }
+
+```
+
+### JS für den neuen Cookie Disclaimer und die Einbindung von YouTube-Videos
+
+```js
+
+var jubiGdpr = {
+
+  init: function () {
+    console.log('Module Executed: GDPR');
+
+    jubiGdpr.settings = {
+      tracking_id             : $('#cookieConsent').attr('data-trackid'),
+      tracking_ua             : $('#cookieConsent').attr('data-trackua'),
+      tracking_cookie_domain  : '.' + $('body').attr('data-uri').replace('https://',''),
+      tracking_cookie_path    : '/'
+    }
+
+    jubiGdpr.cookieConsent();
+  },
+
+  cookieConsent : function() {
+
+    $('.gaallow').on('click',function() {
+      $('.gaallow').removeClass('hollow').addClass('is-checked');
+      $('.gadeny').addClass('hollow').removeClass('is-checked');
+      Cookies.set('GAconsentGiven', 1, { expires: 365 });
+      jubiGdpr.hideConsentPanel();
+      jubiGdpr.loadAnalytics();
+    });
+    $('.gadeny').on('click',function() {
+      $('.gadeny').removeClass('hollow').addClass('is-checked');
+      $('.gaallow').addClass('hollow').removeClass('is-checked');
+      Cookies.set('GAconsentGiven', 0, { expires: 365 });
+      jubiGdpr.hideConsentPanel();
+      jubiGdpr.unloadAnalytics();
+
+    });
+
+    if ( Cookies.get( 'GAconsentGiven' ) ) {
+      $('#cookieConsent').hide();
+      if ( Cookies.get( 'GAconsentGiven' ) == 1 ) {
+        $('.gaallow').removeClass('hollow').addClass('is-checked');
+        jubiGdpr.loadAnalytics();
+      } else {
+        $('.gadeny').removeClass('hollow').addClass('is-checked');
+      }
+    }
+  },
+
+  loadAnalytics : function() {
+    var tid = jubiGdpr.settings.tracking_id;
+
+    var gascript = document.createElement('script');
+    gascript.async = true;
+    gascript.src = 'https://www.googletagmanager.com/gtag/js?id=' + tid;
+    $('head').append(gascript);
+
+    // track pageview
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', tid, { 'anonymize_ip': true });
+
+    console.log('Google Analytics Tracking enabled');
+  },
+
+  unloadAnalytics : function() {
+    var tid   = apolloGdprYoutube.settings.tracking_id;
+    var tua   = apolloGdprYoutube.settings.tracking_ua;
+    var tdom  = apolloGdprYoutube.settings.tracking_cookie_domain;
+    var tpath = apolloGdprYoutube.settings.tracking_cookie_path;
+
+    var gtag_cookie = '_gat_gtag_' + tua.replace(/-/g, "_");
+
+    Cookies.remove('_ga', {domain: tdom, path: tpath});
+    Cookies.remove('_gid', {domain: tdom, path: tpath});
+    Cookies.remove('_gat_' + tua, {domain: tdom, path: tpath});
+    Cookies.remove(gtag_cookie , {domain: tdom, path: tpath});
+
+    location.reload();
+
+    console.log('Google Analytics Tracking disabled');
+  },
+
+  hideConsentPanel : function() {
+    var $panel = $('#cookieConsent'),
+        h = $panel.outerHeight();
+
+    $panel.css({'height':h});
+    setTimeout(function() {
+      $panel.css({'height':0});
+    },600);
+    setTimeout(function() {
+      $('.sticky').foundation('_calc', true);
+    },1000);
+  }
+}
+
+$(document).ready(function() {
+  jubiGdprYoutube.init();
+});
+
 ```
